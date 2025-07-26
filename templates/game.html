@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if game %}{{ game.name }}{% else %}Game Not Found{% endif %} - Details</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        {% if game %}
+            <h1 class="my-4">{{ game.name }}</h1>
+            <div class="row">
+                <div class="col-md-4">
+                    <img src="{{ game.image }}" alt="{{ game.name }}" class="img-fluid">
+                </div>
+                <div class="col-md-8">
+                    <h3>Description</h3>
+                    <p>{{ game.description | safe }}</p>
+                    <h3>Details</h3>
+                    <ul>
+                        <li><strong>Developers:</strong> {{ game.developers }}</li>
+                        <li><strong>Publishers:</strong> {{ game.publishers }}</li>
+                        <li><strong>Platforms:</strong> {{ game.platforms }}</li>
+                        <li><strong>Price:</strong> ${{ game.current_price / 100 }}</li>
+                        <li><strong>Discount:</strong> {{ game.discount if game.discount else 'None' }}</li>
+                        <li><strong>Tags:</strong> {{ game.tags }}</li>
+                        <li><strong>Genres:</strong> {{ game.genres }}</li>
+                        <li><strong>Release Date:</strong> {{ game.published_store }}</li>
+                    </ul>
+                </div>
+            </div>
+        {% else %}
+            <h1 class="my-4">Game Not Found</h1>
+            <p>The game you are looking for does not exist.</p>
+        {% endif %}
+        <a href="/" class="btn btn-primary mt-4">Back to Search</a>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</body>
+</html>

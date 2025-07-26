@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SteamDB Analytics</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1 class="my-4">SteamDB Analytics Dashboard</h1>
+        <form id="queryForm" method="POST" action="/query">
+            <div class="form-group">
+                <label for="query">Enter your query (use ';' to separate multiple queries):</label>
+                <input type="text" class="form-control" id="query" name="query" value="{{ query }}" placeholder="e.g., name == 'Portal 2'; genres == 'Action'">
+            </div>
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="match_all" name="match_all">
+                <label class="form-check-label" for="match_all">Match all queries</label>
+            </div>
+            <input type="hidden" name="start" value="0">
+            <input type="hidden" name="limit" value="50">
+            <div class="form-row align-items-center">
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#queriesModal">Query List</button>
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="btn btn-warning" id="loadQueriesButton">Load Lengthy Queries</button>
+                </div>
+                <div class="col-auto ml-auto">
+                    {% if cudf_query_time is not none and cudf_memory_usage is not none %}
+                    <div class="performance-metrics">
+                        <h5>cuDF Performance Metrics</h5>
+                        <p><strong>Query Time:</strong> {{ cudf_query_time }} seconds</p>
+                        <p><strong>Memory Usage:</strong> {{ cudf_memory_usage }} MB</p>
+                    </div>
+                    {% endif %}
+                    {% if pandas_query_time is not none %}
+                    <div class="performance-metrics">
+                        <h5>Pandas Performance Metrics</h5>
+                        <p><strong>Query Time:</strong> {{ pandas_query_time }} seconds</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+        
+        <div class="mt-4">
+            <h2>Query Results:</h2>
+            {% if total_results is not none %}
+                <p>{{ total_results }} / {{ total_games }} games in the database fit the query</p>
+            {% endif %}
+            <div class="row" id="results">
+                {% if error %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% elif results %}
+                    <script>
+                        var results = {{ results | tojson | safe }};
+                    </script>
+                {% endif %}
+            </div>
+            {% if results and total_results > limit %}
+                <button id="loadMore" class="btn btn-secondary mt-4" data-start="{{ start + limit }}">Load 50 more</button>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="modal fade" id="queriesModal" tabindex="-1" role="dialog" aria-labelledby="queriesModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="queriesModalLabel">Available Query Types</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <ul>
+                        <li><strong>name</strong>: e.g., name == 'Portal 2'</li>
+                        <li><strong>genres</strong>: e.g., genres == 'Action'</li>
+                        <li><strong>developers</strong>: e.g., developers == 'Valve'</li>
+                        <li><strong>publishers</strong>: e.g., publishers == 'Valve'</li>
+                        <li><strong>platforms</strong>: e.g., platforms == 'WIN,MAC,LNX'</li>
+                        <li><strong>tags</strong>: e.g., tags == 'Puzzle'</li>
+                        <li><strong>categories</strong>: e.g., categories == 'Single-player'</li>
+                        <li><strong>price</strong>: e.g., current_price == 999</li>
+                        <li><strong>release date</strong>: e.g., published_store == '2011-04-18'</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="lengthyQueriesModal" tabindex="-1" role="dialog" aria-labelledby="lengthyQueriesModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="lengthyQueriesModalLabel">Select a Lengthy Query</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="lengthyQueries"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
